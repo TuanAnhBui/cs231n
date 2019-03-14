@@ -22,14 +22,29 @@ def softmax_loss_naive(W, X, y, reg):
   # Initialize the loss and gradient to zero.
   loss = 0.0
   dW = np.zeros_like(W)
-
+  num_train = X.shape[0]
+  num_classes = W.shape[1]
   #############################################################################
   # TODO: Compute the softmax loss and its gradient using explicit loops.     #
   # Store the loss in loss and the gradient in dW. If you are not careful     #
   # here, it is easy to run into numeric instability. Don't forget the        #
   # regularization!                                                           #
   #############################################################################
-  pass
+  for i in range(num_train):
+        f = X[i].dot(W)
+        f -=np.max(f)
+        p = np.exp(f)/np.sum(np.exp(f))
+        loss -= np.log(p[y[i]])
+        for j in range(num_classes):
+            if j == y[i]:
+                dW[:,j] += (p[y[i]]-1)*X[i]
+            else:
+                dW[:,j] += p[j]*X[i]
+  loss/=num_train
+  loss += reg*np.sum(W*W)
+  dW /=num_train
+  dW += 2*reg*W
+    
   #############################################################################
   #                          END OF YOUR CODE                                 #
   #############################################################################
@@ -46,14 +61,28 @@ def softmax_loss_vectorized(W, X, y, reg):
   # Initialize the loss and gradient to zero.
   loss = 0.0
   dW = np.zeros_like(W)
-
+  num_train = X.shape[0]
+  num_classes = W.shape[1]
   #############################################################################
   # TODO: Compute the softmax loss and its gradient using no explicit loops.  #
   # Store the loss in loss and the gradient in dW. If you are not careful     #
   # here, it is easy to run into numeric instability. Don't forget the        #
   # regularization!                                                           #
   #############################################################################
-  pass
+  f = X.dot(W)
+  max_prob = np.max(f,axis=1)
+  f -= max_prob.reshape(num_train,1)
+  p = np.exp(f)/np.sum(np.exp(f),1).reshape(num_train,1)
+  loss = np.sum(-np.log(p[range(num_train),y]))
+  p[range(num_train),y]-= 1
+ 
+  dW = np.dot(X.T,p)
+
+    
+  loss/=num_train
+  loss += reg*np.sum(W*W)
+  dW /=num_train
+  dW += 2*reg*W
   #############################################################################
   #                          END OF YOUR CODE                                 #
   #############################################################################
